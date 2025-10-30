@@ -68,9 +68,11 @@ jobs:
         run: |
           mkdir -p "${ARTIFACTS_DIR}"
           chmod +x scripts/hash-assets.sh
+          export ARTIFACTS_DIR="${ARTIFACTS_DIR}"
           bash scripts/hash-assets.sh
           if [ ! -f "${ARTIFACTS_DIR}/hashes.json" ]; then
             echo "[FAIL] hashes.json not generated"
+            ls -la "${ARTIFACTS_DIR}" || true
             exit 1
           fi
           echo "[OK] Hashes generated: ${ARTIFACTS_DIR}/hashes.json"
