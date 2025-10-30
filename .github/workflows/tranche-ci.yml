@@ -38,7 +38,7 @@ jobs:
             unity-cache-${{ runner.os }}-
 
       - name: Setup Unity
-        uses: game-ci/unity-actions/setup@v2
+        uses: game-ci/unity-actions/setup@v4
         with:
           version: ${{ env.UNITY_VERSION }}
           # license: ${{ secrets.UNITY_LICENSE }}   # optional: set if using an activated license
