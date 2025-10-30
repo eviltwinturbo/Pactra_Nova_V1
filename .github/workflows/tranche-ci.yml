@@ -33,7 +33,7 @@ jobs:
           path: |
             ${{ env.UNITY_PROJECT_PATH }}/Library
             ${{ env.UNITY_PROJECT_PATH }}/Packages
-          key: unity-cache-${{ runner.os }}-${{ hashFiles(env.UNITY_PROJECT_PATH + '/Packages/manifest.json') }}
+          key: unity-cache-${{ runner.os }}-${{ hashFiles('native-frontends/unity-frontend/Packages/manifest.json') }}
           restore-keys: |
             unity-cache-${{ runner.os }}-
 
