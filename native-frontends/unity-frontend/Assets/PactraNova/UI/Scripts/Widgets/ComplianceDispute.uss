@@ -1,0 +1,204 @@
+/* ComplianceDispute.uss — Cinematic Animations for Dispute Widget */
+
+/* Container styling */
+.dispute-container {
+    padding: 15px;
+    background-color: rgba(20, 20, 30, 0.95);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(100, 150, 200, 0.3);
+    min-width: 600px;
+    min-height: 300px;
+}
+
+.dispute-header {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 15px;
+    text-align: middle-center;
+}
+
+/* Step indicator with glow animation */
+.step-indicator {
+    flex-direction: row;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgba(40, 60, 80, 0.5);
+    border-radius: 4px;
+}
+
+.step-name {
+    font-size: 14px;
+    color: rgba(100, 200, 255, 1.0);
+    -unity-font-style: bold;
+    flex: 1;
+}
+
+/* Glow animation (sequential fade-in over 0.3s) */
+@keyframes GlowIn {
+    0% {
+        opacity: 0;
+        color: rgba(100, 200, 255, 0.3);
+    }
+    50% {
+        opacity: 0.7;
+        color: rgba(100, 200, 255, 0.8);
+    }
+    100% {
+        opacity: 1;
+        color: rgba(100, 200, 255, 1.0);
+    }
+}
+
+.glow-animation {
+    animation: GlowIn 0.3s ease-out forwards;
+}
+
+.step-status-icon {
+    width: 20px;
+    height: 20px;
+    background-color: rgba(100, 200, 255, 0.5);
+    border-radius: 10px;
+}
+
+/* SLA Container */
+.sla-container {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgba(40, 60, 80, 0.3);
+    border-radius: 4px;
+}
+
+.sla-label {
+    font-size: 12px;
+    color: rgba(200, 200, 200, 0.8);
+    margin-right: 10px;
+}
+
+.countdown-display {
+    font-size: 14px;
+    -unity-font-style: bold;
+    color: rgba(100, 200, 255, 1.0);
+    font-family: 'Courier New', monospace;
+}
+
+/* Shimmer effect (continuous texture scroll) */
+@keyframes ShimmerScroll {
+    0% {
+        -unity-background-image-tint-color: rgba(255, 255, 255, 0.1);
+    }
+    50% {
+        -unity-background-image-tint-color: rgba(255, 255, 255, 0.3);
+    }
+    100% {
+        -unity-background-image-tint-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+.shimmer-effect {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    background-color: rgba(100, 200, 255, 0.3);
+    animation: ShimmerScroll 2s ease-in-out infinite;
+}
+
+/* Escalation pulse (red pulse on SLA exceeded) */
+@keyframes EscalationPulse {
+    0% {
+        background-color: rgba(255, 0, 0, 0.0);
+        border-width: 1px;
+    }
+    50% {
+        background-color: rgba(255, 0, 0, 0.5);
+        border-width: 2px;
+    }
+    100% {
+        background-color: rgba(255, 0, 0, 0.0);
+        border-width: 1px;
+    }
+}
+
+.escalation-pulse {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    animation: EscalationPulse 0.8s ease-in-out infinite;
+    border-color: rgba(255, 0, 0, 0.8);
+    border-radius: 8px;
+}
+
+.escalation-pulse.active {
+    display: flex;
+}
+
+/* Provenance overlay */
+.provenance-container {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: rgba(60, 80, 100, 0.4);
+    border-radius: 4px;
+    border-left-width: 3px;
+    border-left-color: rgba(100, 200, 255, 0.6);
+}
+
+.provenance-label {
+    font-size: 11px;
+    color: rgba(150, 150, 150, 0.8);
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.provenance-hash-display {
+    font-size: 10px;
+    font-family: 'Courier New', monospace;
+    color: rgba(100, 200, 255, 0.9);
+    background-color: rgba(20, 40, 60, 0.8);
+    border-radius: 3px;
+    padding: 5px;
+    margin-bottom: 5px;
+}
+
+.provenance-copy-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    background-color: rgba(100, 150, 200, 0.6);
+    border-radius: 3px;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: link;
+}
+
+.provenance-copy-btn:hover {
+    background-color: rgba(100, 150, 200, 0.9);
+}
+
+.provenance-tooltip {
+    display: none;
+    position: absolute;
+    background-color: rgba(40, 60, 80, 0.95);
+    border-width: 1px;
+    border-color: rgba(100, 200, 255, 0.5);
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    color: rgba(100, 200, 255, 0.9);
+    white-space: normal;
+    max-width: 300px;
+    z-index: 100;
+}
+
+.provenance-tooltip.visible {
+    display: flex;
+}
+
+/* Status label */
+.status-label {
+    font-size: 12px;
+    color: rgba(150, 200, 150, 0.9);
+    margin-top: 10px;
+    text-align: middle-center;
+}

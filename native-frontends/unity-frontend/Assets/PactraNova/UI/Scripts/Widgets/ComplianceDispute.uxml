@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="ComplianceDispute.uss" />
+    
+    <ui:VisualElement class="dispute-container">
+        <!-- Header with step name and glow animation -->
+        <ui:Label text="Compliance Dispute" class="dispute-header" />
+        
+        <!-- Step progress indicator with glow effect -->
+        <ui:VisualElement class="step-indicator">
+            <ui:Label name="StepNameLabel" text="Step 1: Filing" class="step-name glow-animation" />
+            <ui:VisualElement class="step-status-icon" />
+        </ui:VisualElement>
+        
+        <!-- SLA Countdown Timer (HH:MM:SS) -->
+        <ui:HorizontalLayout class="sla-container">
+            <ui:Label text="SLA Remaining:" class="sla-label" />
+            <ui:Label name="CountdownLabel" text="00:00:00" class="countdown-display" />
+        </ui:HorizontalLayout>
+        
+        <!-- Shimmer effect overlay -->
+        <ui:VisualElement class="shimmer-effect" />
+        
+        <!-- Escalation pulse indicator -->
+        <ui:VisualElement name="EscalationPulse" class="escalation-pulse" />
+        
+        <!-- Provenance overlay -->
+        <ui:VisualElement name="ProvenanceOverlay" class="provenance-container">
+            <ui:Label text="Provenance Hash" class="provenance-label" />
+            <ui:TextField name="ProvenanceHash" class="provenance-hash-display" readonly="true" />
+            <ui:Button name="CopyHashButton" text="Copy" class="provenance-copy-btn" />
+            <ui:VisualElement name="HashTooltip" class="provenance-tooltip" />
+        </ui:VisualElement>
+        
+        <!-- Status display -->
+        <ui:Label name="StatusLabel" text="In Progress" class="status-label" />
+    </ui:VisualElement>
+</ui:UXML>

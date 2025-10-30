@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "5.6",
+	"Category": "Desktop",
+	"Description": "Pactra Nova - Desktop Application with Slate UI",
+	"Modules": [
+		{
+			"Name": "PactraNova",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
