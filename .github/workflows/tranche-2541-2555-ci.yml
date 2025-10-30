@@ -1,0 +1,79 @@
+name: Tranche CI — 2541-2555
+
+on:
+  push:
+    branches:
+      - feature/phase4-tranche-2541-2555-cinematic-governance
+  workflow_dispatch:
+
+jobs:
+  validate-tranche-2541-2555:
+    name: Validate Tranche 2541-2555
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository scaffold
+        run: |
+          test -d native-frontends/unity-frontend || (echo "MISSING: unity-frontend" && exit 2)
+          test -d native-frontends/unreal-frontend || (echo "MISSING: unreal-frontend" && exit 2)
+          test -f SourceOfTruth/TODO_LEDGER.md || (echo "MISSING: TODO_LEDGER.md" && exit 2)
+          test -f SourceOfTruth/CHANGELOG.md || (echo "MISSING: CHANGELOG.md" && exit 2)
+          test -f SourceOfTruth/QUESTIONS.md || (echo "MISSING: QUESTIONS.md" && exit 2)
+          echo "✅ Tranche 2541-2555 scaffold verified"
+
+      - name: Package structural artifacts
+        run: |
+          mkdir -p provenance/ci-artifacts/${{ github.run_id }}
+          tar -czf provenance/ci-artifacts/${{ github.run_id }}/tranche-2541-2555-structure.tar.gz native-frontends SourceOfTruth TODO_LEDGER.md || true
+
+      - name: Upload structure artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tranche-2541-2555-structure-${{ github.run_id }}
+          path: provenance/ci-artifacts/${{ github.run_id }}/
+
+  runtime-check-optional:
+    name: Runtime Checks (optional, gated)
+    runs-on: ubuntu-latest
+    needs: validate-tranche-2541-2555
+    if: ${{ secrets.RUN_RUNTIME_CHECKS == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Unity (guarded)
+        if: ${{ secrets.UNITY_ACTIVATION_TOKEN != '' }}
+        run: |
+          echo "✅ Unity activation guard in place"
+          echo "Configure UNITY_ACTIVATION_TOKEN as repo secret to enable runtime tests"
+
+      - name: Run optional Unity tests
+        if: ${{ secrets.RUN_UNITY_TESTS == 'true' }}
+        run: |
+          echo "RUN_UNITY_TESTS enabled; implement engine-run steps here"
+
+      - name: Run optional Unreal tests
+        if: ${{ secrets.RUN_UNREAL_TESTS == 'true' }}
+        run: |
+          echo "RUN_UNREAL_TESTS enabled; implement RunUAT steps here"
+
+  self-hosted-unreal-template:
+    name: Self-hosted Unreal Runner Template (disabled)
+    runs-on: [self-hosted, unreal]
+    needs: validate-tranche-2541-2555
+    if: ${{ false }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify RunUAT presence
+        run: |
+          if ! command -v RunUAT.sh >/dev/null 2>&1; then
+            echo "RunUAT not found on runner" && exit 2
+          fi
+
+      - name: Run Unreal Automation Tool (placeholder)
+        run: |
+          echo "Self-hosted Unreal runner available (currently disabled)"
