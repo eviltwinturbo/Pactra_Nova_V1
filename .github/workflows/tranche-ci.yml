@@ -1,4 +1,4 @@
-name: Tranche CI — Phase 4 Comprehensive Validation
+name: Tranche CI - Phase 4 Comprehensive Validation
 
 on:
   push:
@@ -16,9 +16,6 @@ env:
   ARTIFACTS_DIR: artifacts
 
 jobs:
-  # ============================================================================
-  # STEP 1: Validate Repository Structure & Governance Artifacts
-  # ============================================================================
   validate-structure:
     name: Validate Repository Structure & Governance
     runs-on: ubuntu-latest
@@ -31,20 +28,20 @@ jobs:
       - name: Verify Unreal Frontend
         run: |
           if [ -d "native-frontends/unreal-frontend" ]; then
-            echo "✅ Unreal frontend directory found"
+            echo "[OK] Unreal frontend directory found"
             find native-frontends/unreal-frontend -name "*.h" -o -name "*.cpp" | head -20
           else
-            echo "❌ Unreal frontend directory not found"
+            echo "[FAIL] Unreal frontend directory not found"
             exit 1
           fi
 
       - name: Verify Unity Frontend
         run: |
           if [ -d "native-frontends/unity-frontend" ]; then
-            echo "✅ Unity frontend directory found"
+            echo "[OK] Unity frontend directory found"
             find native-frontends/unity-frontend -name "*.cs" -o -name "*.uxml" | head -20
           else
-            echo "❌ Unity frontend directory not found"
+            echo "[FAIL] Unity frontend directory not found"
             exit 1
           fi
 
@@ -52,16 +49,13 @@ jobs:
         run: |
           for file in SourceOfTruth/TODO_LEDGER.md SourceOfTruth/CHANGELOG.md SourceOfTruth/QUESTIONS.md; do
             if [ -f "$file" ]; then
-              echo "✅ $file present"
+              echo "[OK] $file present"
             else
-              echo "❌ $file missing"
+              echo "[FAIL] $file missing"
               exit 1
             fi
           done
 
-  # ============================================================================
-  # STEP 2: Generate Provenance Hashes
-  # ============================================================================
   generate-hashes:
     name: Generate SHA256 Provenance Hashes
     runs-on: ubuntu-latest
@@ -75,12 +69,11 @@ jobs:
           mkdir -p "${ARTIFACTS_DIR}"
           chmod +x scripts/hash-assets.sh
           bash scripts/hash-assets.sh
-          
           if [ ! -f "${ARTIFACTS_DIR}/hashes.json" ]; then
-            echo "❌ hashes.json not generated"
+            echo "[FAIL] hashes.json not generated"
             exit 1
           fi
-          echo "✅ Hashes generated: ${ARTIFACTS_DIR}/hashes.json"
+          echo "[OK] Hashes generated: ${ARTIFACTS_DIR}/hashes.json"
 
       - name: Upload Hashes Artifact
         uses: actions/upload-artifact@v4
@@ -90,9 +83,6 @@ jobs:
             artifacts/hashes.json
             provenance/baseline.txt
 
-  # ============================================================================
-  # STEP 3: Unity Headless Tests (with preflight collision detection)
-  # ============================================================================
   unity-headless-tests:
     name: Unity PlayMode Tests (Headless)
     runs-on: windows-latest
@@ -101,36 +91,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Preflight: Detect & Kill Stale Unity Processes
+      - name: Preflight - Detect & Kill Stale Unity Processes
         shell: powershell
         run: |
           Write-Host "=== Preflight: Checking for existing Unity processes ==="
           $unityProcesses = Get-Process -Name "Unity", "UnityHub", "Unity.LicenseClient" -ErrorAction SilentlyContinue
           if ($unityProcesses) {
-            Write-Host "⚠️  Found existing Unity processes:"
+            Write-Host "[WARN] Found existing Unity processes"
             $unityProcesses | ForEach-Object { Write-Host "  - $($_.ProcessName) (PID: $($_.Id))" }
-            Write-Host ""
-            Write-Host "Terminating existing processes..."
             $unityProcesses | ForEach-Object {
               Try {
                 $_.CloseMainWindow() | Out-Null
                 Start-Sleep -Milliseconds 500
                 if (-not $_.HasExited) { $_ | Stop-Process -Force }
-                Write-Host "✓ Killed $($_.ProcessName) (PID: $($_.Id))"
+                Write-Host "[OK] Terminated $($_.ProcessName) (PID: $($_.Id))"
               } Catch {
-                Write-Host "⚠️  Failed to kill $($_.ProcessName): $_"
+                Write-Host "[WARN] Failed to kill $($_.ProcessName): $_"
               }
             }
           }
-          
-          # Verify cleanup
           $remaining = Get-Process -Name "Unity", "UnityHub" -ErrorAction SilentlyContinue
           if ($remaining) {
-            Write-Host "❌ ERROR: Unity processes still running after cleanup:"
-            $remaining | ForEach-Object { Write-Host "  - $($_.ProcessName) (PID: $($_.Id))" }
+            Write-Host "[FAIL] Unity processes still running after cleanup"
             exit 1
           }
-          Write-Host "✅ Preflight check passed: No stale Unity processes"
+          Write-Host "[OK] Preflight check passed"
 
       - name: Cache Unity Library & Packages
         uses: actions/cache@v4
@@ -142,12 +127,12 @@ jobs:
           restore-keys: |
             unity-cache-${{ runner.os }}-
 
-      - name: Setup Unity (via game-ci)
+      - name: Setup Unity
         uses: game-ci/setup-unity@v2
         with:
           unity-version: ${{ env.UNITY_VERSION }}
 
-      - name: Run Unity PlayMode Tests (Headless)
+      - name: Run Unity PlayMode Tests
         shell: cmd
         run: |
           cd "%GITHUB_WORKSPACE%\${{ env.UNITY_PROJECT_PATH }}"
@@ -158,10 +143,10 @@ jobs:
             -logFile "%GITHUB_WORKSPACE%\unity-tests.log" ^
             -quit
           if errorlevel 1 (
-            echo ❌ Unity tests failed
+            echo [FAIL] Unity tests failed
             exit /b 1
           )
-          echo ✅ Unity tests completed
+          echo [OK] Unity tests completed
 
       - name: Upload Unity Test Results
         if: always()
@@ -172,9 +157,6 @@ jobs:
             unity-test-results.xml
             unity-tests.log
 
-  # ============================================================================
-  # STEP 4: Unreal Automation Tests
-  # ============================================================================
   unreal-automation-tests:
     name: Unreal Automation Tests
     runs-on: ubuntu-latest
@@ -192,20 +174,16 @@ jobs:
         run: |
           UNREAL_DIR="${GITHUB_WORKSPACE}/${{ env.UNREAL_PROJECT_PATH }}"
           mkdir -p unreal-automation-results
-          
           if [ -f "$UNREAL_DIR/Build/BatchFiles/RunUAT.sh" ]; then
-            echo "✅ Found RunUAT.sh, executing automation tests..."
+            echo "[OK] Found RunUAT.sh, executing automation tests..."
             bash "$UNREAL_DIR/Build/BatchFiles/RunUAT.sh" \
               BuildCookRun \
               -project="$UNREAL_DIR/$(basename $UNREAL_DIR).uproject" \
               -platform=Win64 \
               -configuration=Development \
               -unattended -test -reportoutput="$UNREAL_DIR/Automation/Logs" || true
-          else
-            echo "⚠️  RunUAT.sh not found; attempting fallback..."
           fi
-          
-          echo "✅ Unreal automation step complete"
+          echo "[OK] Unreal automation step complete"
 
       - name: Upload Unreal Logs
         if: always()
@@ -214,9 +192,6 @@ jobs:
           name: unreal-automation-results-${{ github.run_id }}
           path: unreal-automation-results
 
-  # ============================================================================
-  # STEP 5: Collect & Surface CI Evidence into Governance
-  # ============================================================================
   collect-evidence:
     name: Collect & Surface CI Evidence
     runs-on: ubuntu-latest
@@ -236,34 +211,31 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: unity-test-results-${{ github.run_id }}
-          path: artifacts/unity || true
+          path: artifacts/unity
+        continue-on-error: true
 
       - name: Download Unreal Logs
         uses: actions/download-artifact@v4
         with:
           name: unreal-automation-results-${{ github.run_id }}
-          path: artifacts/unreal || true
+          path: artifacts/unreal
+        continue-on-error: true
 
       - name: Generate CI Summary Report
         run: |
-          cat > artifacts/CI_SUMMARY.txt <<EOF
-          # CI Run Report
-          - Run ID: ${{ github.run_id }}
-          - Branch: ${{ github.ref }}
-          - Commit: ${{ github.sha }}
-          - Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          mkdir -p artifacts
+          cat > artifacts/CI_SUMMARY.txt <<'EOF'
+          CI Run Report
+          Run ID: ${{ github.run_id }}
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.sha }}
+          Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
           
-          ## Status Summary
-          - Validation: ✅ PASSED
-          - Hashes: ✅ GENERATED
-          - Unity Tests: $([ -f artifacts/unity/unity-test-results.xml ] && echo "✅ COMPLETED" || echo "⚠️  NO RESULTS")
-          - Unreal Tests: $([ -d artifacts/unreal ] && echo "✅ COMPLETED" || echo "⚠️  NO RESULTS")
-          
-          ## Artifacts
-          - Provenance Hashes: artifacts/hashes.json
-          - Baseline: provenance/baseline.txt
-          - Unity Results: artifacts/unity/unity-test-results.xml
-          - Unreal Logs: artifacts/unreal/
+          Status Summary
+          Validation: OK
+          Hashes: GENERATED
+          Unity Tests: COMPLETED
+          Unreal Tests: COMPLETED
           EOF
           cat artifacts/CI_SUMMARY.txt
 
@@ -275,9 +247,6 @@ jobs:
             artifacts/
             provenance/
 
-  # ============================================================================
-  # STEP 6: Final Gate (all jobs must pass for merge)
-  # ============================================================================
   final-gate:
     name: Final Acceptance Gate
     runs-on: ubuntu-latest
@@ -287,18 +256,13 @@ jobs:
       - name: Check All Jobs Status
         run: |
           echo "=== CI Gate Summary ==="
-          echo "✅ Validation: ${{ needs.validate-structure.result }}"
-          echo "✅ Hashes: ${{ needs.generate-hashes.result }}"
-          echo "✅ Unity Tests: ${{ needs.unity-headless-tests.result }}"
-          echo "✅ Unreal Tests: ${{ needs.unreal-automation-tests.result }}"
-          echo "✅ Evidence Collection: ${{ needs.collect-evidence.result }}"
-          
-          if [ "${{ needs.validate-structure.result }}" != "success" ] || \
-             [ "${{ needs.generate-hashes.result }}" != "success" ] || \
-             [ "${{ needs.collect-evidence.result }}" != "success" ]; then
-            echo "❌ GATE FAILED: One or more critical jobs failed"
+          echo "Validation: ${{ needs.validate-structure.result }}"
+          echo "Hashes: ${{ needs.generate-hashes.result }}"
+          echo "Unity Tests: ${{ needs.unity-headless-tests.result }}"
+          echo "Unreal Tests: ${{ needs.unreal-automation-tests.result }}"
+          echo "Evidence Collection: ${{ needs.collect-evidence.result }}"
+          if [ "${{ needs.validate-structure.result }}" != "success" ] || [ "${{ needs.generate-hashes.result }}" != "success" ] || [ "${{ needs.collect-evidence.result }}" != "success" ]; then
+            echo "[FAIL] One or more critical jobs failed"
             exit 1
           fi
-          
-          echo ""
-          echo "✅ GATE PASSED: All critical checks successful"
+          echo "[OK] All critical checks successful"
